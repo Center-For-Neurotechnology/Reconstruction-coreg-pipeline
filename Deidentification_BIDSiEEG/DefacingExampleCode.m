@@ -1,4 +1,5 @@
 
+%% Sets up the directories and the files to de-identify/deface
 clear 
 addpath(genpath('X:\Projects\Lab_Materials\Analysis_Tools_and_Software\fieldtrip-20220202\'))
 
@@ -13,14 +14,11 @@ PreopMRIFile=dir([PreopMRIDirectory,'\*.nii']);
 PostopMRIDirectory = fullfile(wd , [PatientName], 'ses-postimp', 'anat'); 
 PostopMRIFile=dir([PostopMRIDirectory,'\*.nii']);
 
-
-%%
-clear ct mri mri_anon ct_anon
+clear post_anon mri mri_anon post
 
 Desig=PatientName;
-
 Desig
-%%
+%% Reads the preoperative MRI
 mri = ft_read_mri([PreopMRIDirectory,PreopMRIFile(1).name]);
 %
 cfg = [];
@@ -28,11 +26,11 @@ mri_anon = ft_defacevolume(cfg, mri);
 %
 ft_write_mri([PreopMRIDirectory,'\',Desig,'_anon.nii'], mri_anon.anatomy, 'transform', mri_anon.transform, 'dataformat', 'nifti');
 
-%%
-ct = ft_read_mri([PostopMRIDirectory,PostopMRIFile(1).name]);
+%% Reads the postoperative scan (CT or MRI)
+post = ft_read_mri([PostopMRIDirectory,PostopMRIFile(1).name]);
 %
 cfg = [];
-ct_anon = ft_defacevolume(cfg, ct);
+post_anon = ft_defacevolume(cfg, ct);
 %
-ft_write_mri([PostopMRIDirectory,'\',Desig,'_anonPostOPScan.nii'], ct_anon.anatomy, 'transform', ct_anon.transform, 'dataformat', 'nifti');
+ft_write_mri([PostopMRIDirectory,'\',Desig,'_anonPostOPScan.nii'], post_anon.anatomy, 'transform', post_anon.transform, 'dataformat', 'nifti');
 NUMCh
