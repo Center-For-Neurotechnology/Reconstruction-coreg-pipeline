@@ -7,8 +7,6 @@ This pipeline is focused on remaining in the native space of the patient as much
 
 The design of the code is modular, in that certain products of the pipeline can be separated from others. Further, there are other options for the electrode localization (shown below).
 
-![Pipeline](https://user-images.githubusercontent.com/11430978/190929346-14555259-6f84-4f04-ac9c-11e9127ab46a.png)
-
 Useful code (either used in this pipeline or optional code):
 
 MATLAB: https://www.mathworks.com/products/matlab.html
@@ -28,3 +26,4 @@ Mango: https://ric.uthscsa.edu/mango/ (can be used in place of FreeView)
 LeadDBS: https://www.lead-dbs.org/ 
 LeGUI: https://github.com/Rolston-Lab/LeGUI
 
+![Pipeline](https://user-images.githubusercontent.com/11430978/190929346-14555259-6f84-4f04-ac9c-11e9127ab46a.png)
