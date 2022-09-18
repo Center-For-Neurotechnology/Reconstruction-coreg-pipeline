@@ -10,8 +10,11 @@ The design of the code is modular, in that certain products of the pipeline can 
 Useful code (either used in this pipeline or optional code):
 
 MATLAB: https://www.mathworks.com/products/matlab.html
+
 Freesurfer: https://surfer.nmr.mgh.harvard.edu/fswiki/DownloadAndInstall
+
 iELVis: https://www.mathworks.com/matlabcentral/fileexchange/57317-ielvis
+
 Fieldtrip: https://www.fieldtriptoolbox.org/ 
 
 For de-identification:
@@ -19,11 +22,14 @@ Fieldtrip: https://www.fieldtriptoolbox.org/
 
 For standardizing the data in iEEG BIDS format: 
 BIDS starter kit WIKI: https://bids-standard.github.io/bids-starter-kit/
+
 BIDS starter kit GitHub: https://github.com/bids-standard/bids-starter-kit 
 
 Optional software which would allow you to follow the same pipeline include the below:
 Mango: https://ric.uthscsa.edu/mango/ (can be used in place of FreeView)
+
 LeadDBS: https://www.lead-dbs.org/ 
+
 LeGUI: https://github.com/Rolston-Lab/LeGUI
 
 
