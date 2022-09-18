@@ -26,4 +26,5 @@ Mango: https://ric.uthscsa.edu/mango/ (can be used in place of FreeView)
 LeadDBS: https://www.lead-dbs.org/ 
 LeGUI: https://github.com/Rolston-Lab/LeGUI
 
-![Pipeline](https://user-images.githubusercontent.com/11430978/190929346-14555259-6f84-4f04-ac9c-11e9127ab46a.png)
+
+![Pipeline2](https://user-images.githubusercontent.com/11430978/190929846-7c92da00-2242-4994-bae0-6eed6f7a17f6.png)
