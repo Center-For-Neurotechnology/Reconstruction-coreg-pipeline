@@ -3,7 +3,7 @@ Cash lab code for coregistration of intracranial electrodes
 
 This code uses a number of different open-source packages to localize electrodes implanted in the brain in the case of intracranial monitoring for the treatment of epilepsy. The idea is to use components of several packages that allows reconstruction and visualization of electrode locations to match to recorded intracranial neurophysiological data, whether in examining epileptiform activity, understanding cognitive processing, or examining the effects of direct electrical stimulation. 
 
-This pipeline is focused on remaining in the native space of the patient as much as possible. For this reason, we do not use many components of already provided software packages such as BrainStorm or LeadDBS. 
+This pipeline is focused on remaining in the native space of the patient as much as possible. For this reason, we do not use many components of already provided by such software packages BrainStorm or LeadDBS. 
 
 The design of the code is modular, in that certain products of the pipeline can be separated from others. Further, there are other options for the electrode localization (shown below).
 
