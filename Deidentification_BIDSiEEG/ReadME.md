@@ -2,6 +2,8 @@
 
 Code in in this folder is to de-identify scans (by manual defacing) and save channel information and scans into the correct iEEG BIDS formatting for shared data. 
 
+The example code where most the scripts are run together is "createBIDS_ieeg_jsoniEEGChannelsAll2.m". 
+
 The code is modified from the bids-starter-kit:
 https://github.com/bids-standard/bids-starter-kit/tree/main/matlabCode/ieeg
 
