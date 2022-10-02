@@ -1,5 +1,4 @@
-% clear
-% addpath(genpath('X:\Projects\Lab_Materials\Analysis_Tools_and_Software\fieldtrip-20220202\'))
+ clear
 addpath(genpath('Y:\ReconPipelinePaper\Code\'))
 
 SubcorticalLabels={'Brain-Stem';'Left-Accumbens-area';'Left-Amygdala';...
