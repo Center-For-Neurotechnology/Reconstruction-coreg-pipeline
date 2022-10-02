@@ -1,7 +1,6 @@
-clear
-addpath(genpath('X:\Projects\Lab_Materials\Analysis_Tools_and_Software\fieldtrip-20220202\'))
-addpath(genpath('X:\Projects\Lab_Materials\Lab Techs\Recon_MMVT_Schematic\Reconstructions\CoregCode\'))
-addpath(genpath('F:\Dropbox (Personal)\ACPProjects\CashLab_DataOrganization\ReconPipeline\Code\Measurements\'))
+% clear
+% addpath(genpath('X:\Projects\Lab_Materials\Analysis_Tools_and_Software\fieldtrip-20220202\'))
+addpath(genpath('Y:\ReconPipelinePaper\Code\'))
 
 SubcorticalLabels={'Brain-Stem';'Left-Accumbens-area';'Left-Amygdala';...
     'Left-Caudate';'Left-Cerebellum-Cortex';'Left-Hippocampus';...
@@ -10,17 +9,17 @@ SubcorticalLabels={'Brain-Stem';'Left-Accumbens-area';'Left-Amygdala';...
     'Right-Cerebellum-Cortex';'Right-Hippocampus';'Right-Pallidum';....
     'Right-Putamen';'Right-Thalamus-Proper';'Right-Thalamus'};
 
-Patients{1}='test';
+Patients{1}='sub-0t3i';
 
 MissingFile=[];MissingFileLabel={};MissingFileSubcort=[];MissingFileLabelSubcort={};
 for DI=1:size(Patients,1)
     %     if isempty(dir(['Y:\StimDataBackup\ReconLocs\',Patients{DI},'\',Patients{DI},'MappedRegionsVertices*']))==1
     Patients{DI}
     PtName=Patients{DI};
-    MRIDirectory=['X:\Original Data\',PtName(1:2),'\',PtName,'\',PtName,'_Notes_and_Images\',PtName,'_SurferOutput\surf\'];
-    RASExcelDirectory=['X:\Original Data\',PtName(1:2),'\',PtName,'\',PtName,'_Notes_and_Images\'];
-    ParcelDirectory=['X:\Original Data\',PtName(1:2),'\',PtName,'\',PtName,'_MMVT\electrodes\'];
-    VolumeDir=['X:\Original Data\',PtName(1:2),'\',PtName,'\',PtName,'_Notes_and_Images\',PtName,'_Volumes\'];
+    MRIDirectory=['Y:\ReconPipelinePaper\Data\derivatives\freesurfer\',PtName,'\surf\'];
+    RASExcelDirectory=['Y:\ReconPipelinePaper\Data\',PtName,'\ses-postimp\ieeg\'];
+    ELAParcelDirectory=['Y:\ReconPipelinePaper\Data\derivatives\MMVT\',PtName,'\electrodes\'];
+    VolumeDir=['Y:\ReconPipelinePaper\Data\derivatives\ParcellatedVolumes\',PtName,'\'];
     
     if isempty(dir([RASExcelDirectory,'\',PtName,'_ElectrodeInfo_RAS.xlsx*']))==0 &&...
             isempty(dir([MRIDirectory,'*rh.pial']))==0
@@ -243,7 +242,7 @@ for DI=1:size(Patients,1)
         end
         
         %% ELA localization
-        MappingParcellationsScript
+        MappingELAParcellationsScript
         
         ProbabilityMapping(isnan(ProbabilityMapping(:,8)),8)=length(TargetLabelsParc);
         ParcellationELALabel=TargetLabelsParc(ProbabilityMapping(:,8));
@@ -251,7 +250,7 @@ for DI=1:size(Patients,1)
         ProbabilityELAGrey=ProbabilityMapping(:,2);
         ProbabilityELAWhite=ProbabilityMapping(:,3);
         
-        %% Measures along a single depth or grid (grouped by device)
+        %% Measures along a single depth or grid (grouped by per depth or per grid)
         [INElec,ElecList]=grp2idx(LabelOnly);
         SingleCoordLoc=[];LeadDist=[];
         InterContactDistBipol=[];
@@ -337,11 +336,11 @@ for DI=1:size(Patients,1)
             NumberOfContactsNearby20mm,...
             NearestWhiteMatterTract,NearestWhiteMatterTractIndex);
         
-        writetable(T,['C:\Users\ChromaticEEG\Desktop\Testing\',PtName,'AlignmentLeadDBS\',PtName,'_RAS_Electrode_Parc.csv'])
-        writetable(T,['C:\Users\ChromaticEEG\Desktop\Testing\',PtName,'AlignmentLeadDBS\',PtName,'_RAS_Electrode_Parc.xlsx'])
+        writetable(T,['Y:\ReconPipelinePaper\Data\derivatives\',PtName,'_RAS_Electrode_Parc.csv'])
+        writetable(T,['Y:\ReconPipelinePaper\Data\derivatives\',PtName,'_RAS_Electrode_Parc.xlsx'])
         
         BrainLocationLabelsELA=BrainLocationLabels;
-        save(['C:\Users\ChromaticEEG\Desktop\Testing\',PtName,'AlignmentLeadDBS\',PtName,'_RAS_Electrode_Parc'],...
+        save(['Y:\ReconPipelinePaper\Data\derivatives\',PtName,'_RAS_Electrode_Parc'],...
             'T','LabelVolume','VolHeaderLabel','RASClosestPerLoc',...
             'RAS_coords','RAS_labels',...
             'ValVertSubcort','SCLabel','facesWhiterh','facesWhitelh','verticesWhiterh',...
@@ -356,11 +355,6 @@ for DI=1:size(Patients,1)
     end
     %     end
 end
-% save('H:\Amplitude\MissingData','MissingFileLabel','MissingFile','MissingFileLabelSubcort','MissingFileSubcort')
-%                     patch('Faces',faceslh,'Vertices',verticeslh,'FaceColor',[.7 .7 .7],'facealpha',0.1,'edgecolor','none')
-%                     patch('Faces',faceslhdacc,'Vertices',verticeslhdacc,'FaceColor',[COLreg(1,:)],'facealpha',0.3,'edgecolor','none')
-%                     patch('Faces',faceslhracc,'Vertices',verticeslhracc,'FaceColor',[COLreg(2,:)],'facealpha',0.3,'edgecolor','none')
-%                     patch('Faces',faceslhamyg,'Vertices',verticeslhamyg,'FaceColor',[COLreg(3,:)],'facealpha',0.3,'edgecolor','none')
 %%
 BrainCol=[.95 .95 .95];
 COLVol=colormap(hsv(length(LocMap)));
