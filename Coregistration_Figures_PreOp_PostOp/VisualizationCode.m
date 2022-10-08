@@ -477,6 +477,7 @@ end
 
 TargetChannels=[];
 PLOT3D=1; %Change if you don't want to run the glass brains
+ASPECT=1; %change to 0 if the brain shapes look weird
 
 for CHa=1:length(Label) %this automatically runs through the labels for the depths
     % for CHa=2             %this automatically runs through the labels for the depths
@@ -637,7 +638,14 @@ for CHa=1:length(Label) %this automatically runs through the labels for the dept
                     text(size(Coronal,2)/2,AxesLim2(VI,2)-20,'R','color','w','fontsize',12,'backgroundcolor','k')
                     shading flat
                     set(axes1,'xlim',AxesLim1(VI,:),'ylim',AxesLim2(VI,:))
-                    %                     daspect([fliplr(size(Coronal)/max(size(Coronal))) 1])
+                    dAspect=(size(Coronal)/max(size(Coronal)));
+                    if dAspect(1)>dAspect(2)
+                        dAspect=fliplr(dAspect);
+                    end
+                    daspect([dAspect 1])
+                    if ASPECT==1
+                    daspect auto
+                    end
                 elseif VI==2
                     imagesc(Horizontal)
                     hold on
@@ -647,7 +655,14 @@ for CHa=1:length(Label) %this automatically runs through the labels for the dept
                     text(size(Horizontal,2)/2,AxesLim2(VI,2)-20,'R','color','w','fontsize',12,'backgroundcolor','k')
                     shading flat
                     set(axes1,'xlim',AxesLim1(VI,:),'ylim',AxesLim2(VI,:))
-                    %                     daspect([fliplr(size(Horizontal)/max(size(Horizontal))) 1])
+                    dAspect=(size(Horizontal)/max(size(Horizontal)));
+                    if dAspect(1)>dAspect(2)
+                        dAspect=fliplr(dAspect);
+                    end
+                    daspect([dAspect 1])
+                    if ASPECT==1
+                    daspect auto
+                    end
                 elseif VI==3
                     imagesc(Sagittal)
                     hold on
@@ -657,8 +672,15 @@ for CHa=1:length(Label) %this automatically runs through the labels for the dept
                     text(size(Sagittal,2)/2,AxesLim2(VI,2)-20,'A','color','w','fontsize',12,'backgroundcolor','k')
                     shading flat
                     set(axes1,'xlim',AxesLim1(VI,:),'ylim',AxesLim2(VI,:))
-                    %                                         daspect([fliplr(size(Sagittal)/max(size(Sagittal))) 1])
-                end
+                    dAspect=(size(Sagittal)/max(size(Sagittal)));
+                    if dAspect(1)>dAspect(2)
+                        dAspect=fliplr(dAspect);
+                    end
+                    daspect([dAspect 1])
+                    if ASPECT==1
+                    daspect auto
+                    end
+                    end
                 
                 
                 %To plot the right values relative to the channels and slices
@@ -686,7 +708,8 @@ for CHa=1:length(Label) %this automatically runs through the labels for the dept
                 
                 axis off
                 colormap(gray(255))
-                caxis([0 200])
+                brightness = mean2(vol2(:,:,round(size(vol2,1)/2))+3*std2(vol2(:,:,round(size(vol2,1)/2))));
+                caxis([0 brightness])
             end
             
             
