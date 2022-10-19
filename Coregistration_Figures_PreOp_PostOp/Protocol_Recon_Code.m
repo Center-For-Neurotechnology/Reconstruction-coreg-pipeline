@@ -10,11 +10,11 @@ addpath(genpath('X:\Projects\Lab_Materials\Analysis_Tools_and_Software\fieldtrip
 addpath(genpath('X:\Projects\Lab_Materials\Lab Techs\Recon_MMVT_Schematic\Reconstructions\CoregCode\'))
 addpath(genpath('F:\Dropbox (Personal)\ACPProjects\CashLab_DataOrganization\ReconPipeline\Code\BIDSConversion\'))
 
-PatientName='sub-0d9l';
-wd = ['Y:\StimDataBackup\Data_Stimulation\DeIdentifiedDataSet\'];
+PatientName='sub-5o1r';
+wd = ['Y:\ReconPipelinePaper\Data\'];
 
-DirVal = fullfile(wd , ['derivatives\freesurfer\',PatientName], 'surf'); %the surf folder with the freesurfer output
-ImageDirectory = fullfile(wd , ['derivatives\freesurfer\',PatientName], 'Images');         %print files
+DirVal = fullfile(wd , ['derivatives\freesurfer\',PatientName,'_SurferOutput'], 'surf'); %the surf folder with the freesurfer output
+ImageDirectory = fullfile(wd , ['derivatives\ReconImages\',PatientName], [PatientName,'_Images']);         %print files
 RASExcelDirectory = fullfile(wd, PatientName, 'ses-postimp','ieeg' );
 MRIDirectory = fullfile(wd , [PatientName], 'ses-preimp', 'anat'); 
 MRIFile=dir([MRIDirectory,'\*.nii']);
@@ -47,10 +47,20 @@ display("Made it Through. Check the Workspace, that the files might match your e
 %% Getting the freesurfer pial and seeing where things are located, with the white matter in blue and pial surface.
 
 % It's also handy for the blender-friendly stl file saving.
-[verticesrh, facesrh] = freesurfer_read_surf( fullfile(DirVal,'rh.pial') );
+if isempty(dir([DirVal,'\rh.pial.T1*']))==0
+    rightPialFile='rh.pial.T1';
+else
+    rightPialFile='rh.pial';
+end
+[verticesrh, facesrh] = freesurfer_read_surf( fullfile(DirVal,rightPialFile) );
 % stlwrite( fullfile(DirVal,'right.stl'), facesrh, verticesrh)
 
-[verticeslh, faceslh] = freesurfer_read_surf( fullfile(DirVal,'lh.pial') );
+if isempty(dir([DirVal,'\lh.pial.T1*']))==0
+    leftPialFile='lh.pial.T1';
+else 
+    leftPialFile='lh.pial';
+end
+[verticeslh, faceslh] = freesurfer_read_surf( fullfile(DirVal,leftPialFile) );
 % stlwrite( fullfile(DirVal,'left.stl'), faceslh, verticeslh)
 
 [verticesrhwhite, facesrhwhite] = freesurfer_read_surf( fullfile(DirVal,'rh.white') );
@@ -66,8 +76,8 @@ patch('Faces',facesrh,'Vertices',verticesrh,'FaceColor',[.7 .7 .7],'facealpha',.
 camlight('headlight');
 
 h=gcf;
-[cortexr.vert, cortexr.tri] = read_surf( fullfile(DirVal, 'lh.pial') );
-[cortexl.vert, cortexl.tri] = read_surf( fullfile(DirVal, 'rh.pial') );
+[cortexr.vert, cortexr.tri] = read_surf( fullfile(DirVal, rightPialFile) );
+[cortexl.vert, cortexl.tri] = read_surf( fullfile(DirVal, leftPialFile) );
 
 tripatch(cortexr,h,[.5 .5 .5],'facealpha',1);
 hold on
@@ -83,8 +93,8 @@ clf
 fig=gcf;
 
 %Returns a matrix of vertex coordinates and face lists for the given .pial file
-[cortexr.vert, cortexr.tri] = read_surf( fullfile(DirVal, 'rh.pial') );
-[cortexl.vert, cortexl.tri] = read_surf( fullfile(DirVal, 'lh.pial') );
+[cortexr.vert, cortexr.tri] = read_surf( fullfile(DirVal, rightPialFile) );
+[cortexl.vert, cortexl.tri] = read_surf( fullfile(DirVal, leftPialFile) );
 
 %Draws the 3D figure of the brain with an opaque surface(ideal for Grid & Strips)
 %Changing the "FaceAlpha" number will change the opacity
@@ -423,10 +433,10 @@ for ChanLabel=1:length(Label)%For each Depth/Grid/Strip
         figure1.Color=[1 1 1];
         figure1.PaperPositionMode = 'auto';
         figure1.InvertHardcopy = 'off';
-        %         print(gcf,'-dpng','-r400',[ImageDirectory,'ReconPerDepthSlice',ElecLabel])
+                print(gcf,'-dpng','-r400',fullfile( ImageDirectory, ['ReconPerDepthSlice',ElecLabel]))
         %            close
-        pause
-        clf
+%         pause
+%         clf
     end
 end
 
@@ -477,7 +487,6 @@ end
 
 TargetChannels=[];
 PLOT3D=1; %Change if you don't want to run the glass brains
-ASPECT=1; %change to 0 if the brain shapes look weird
 
 for CHa=1:length(Label) %this automatically runs through the labels for the depths
     % for CHa=2             %this automatically runs through the labels for the depths
@@ -638,14 +647,7 @@ for CHa=1:length(Label) %this automatically runs through the labels for the dept
                     text(size(Coronal,2)/2,AxesLim2(VI,2)-20,'R','color','w','fontsize',12,'backgroundcolor','k')
                     shading flat
                     set(axes1,'xlim',AxesLim1(VI,:),'ylim',AxesLim2(VI,:))
-                    dAspect=(size(Coronal)/max(size(Coronal)));
-                    if dAspect(1)>dAspect(2)
-                        dAspect=fliplr(dAspect);
-                    end
-                    daspect([dAspect 1])
-                    if ASPECT==1
-                    daspect auto
-                    end
+                    %                     daspect([fliplr(size(Coronal)/max(size(Coronal))) 1])
                 elseif VI==2
                     imagesc(Horizontal)
                     hold on
@@ -655,14 +657,7 @@ for CHa=1:length(Label) %this automatically runs through the labels for the dept
                     text(size(Horizontal,2)/2,AxesLim2(VI,2)-20,'R','color','w','fontsize',12,'backgroundcolor','k')
                     shading flat
                     set(axes1,'xlim',AxesLim1(VI,:),'ylim',AxesLim2(VI,:))
-                    dAspect=(size(Horizontal)/max(size(Horizontal)));
-                    if dAspect(1)>dAspect(2)
-                        dAspect=fliplr(dAspect);
-                    end
-                    daspect([dAspect 1])
-                    if ASPECT==1
-                    daspect auto
-                    end
+                    %                     daspect([fliplr(size(Horizontal)/max(size(Horizontal))) 1])
                 elseif VI==3
                     imagesc(Sagittal)
                     hold on
@@ -672,15 +667,8 @@ for CHa=1:length(Label) %this automatically runs through the labels for the dept
                     text(size(Sagittal,2)/2,AxesLim2(VI,2)-20,'A','color','w','fontsize',12,'backgroundcolor','k')
                     shading flat
                     set(axes1,'xlim',AxesLim1(VI,:),'ylim',AxesLim2(VI,:))
-                    dAspect=(size(Sagittal)/max(size(Sagittal)));
-                    if dAspect(1)>dAspect(2)
-                        dAspect=fliplr(dAspect);
-                    end
-                    daspect([dAspect 1])
-                    if ASPECT==1
-                    daspect auto
-                    end
-                    end
+                    %                                         daspect([fliplr(size(Sagittal)/max(size(Sagittal))) 1])
+                end
                 
                 
                 %To plot the right values relative to the channels and slices
@@ -708,8 +696,7 @@ for CHa=1:length(Label) %this automatically runs through the labels for the dept
                 
                 axis off
                 colormap(gray(255))
-                brightness = mean2(vol2(:,:,round(size(vol2,1)/2))+3*std2(vol2(:,:,round(size(vol2,1)/2))));
-                caxis([0 brightness])
+                caxis([0 200])
             end
             
             
@@ -730,12 +717,10 @@ for CHa=1:length(Label) %this automatically runs through the labels for the dept
             set(gcf, 'PaperUnits', 'centimeters');
             set(gcf, 'PaperPosition', [0 0 32 20]);
             %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            pause
-            clf
-            % %             print(gcf,'-dpng','-r400',fullfile( ImageDirectory, ['ReconPerDepth',TargetElec,'Channel',num2str(ChannelNum)]) )
-            %             close
+%             pause
+%             clf
+                        print(gcf,'-dpng','-r400',fullfile( ImageDirectory, ['ReconPerDepth',TargetElec,'Channel',num2str(ChannelNum)]) )
+                       close
         end
     end
 end
-
-
