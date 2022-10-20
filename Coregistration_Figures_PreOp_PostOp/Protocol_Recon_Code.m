@@ -194,7 +194,7 @@ for OL=1:length(V)
     %   shading interp; lighting gouraud; %material dull;
     %If you want to save this image:
     
-    %  print(gcf,'-djpeg','-r600',['M:\Recons\MG103\',num2str(OL)])
+    print(gcf,'-djpeg','-r600',fullfile(ImageDirectory,PatientName,'ThreeDView_',num2str(OL)))
     
 end
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
