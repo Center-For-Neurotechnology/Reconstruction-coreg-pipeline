@@ -696,7 +696,9 @@ for CHa=1:length(Label) %this automatically runs through the labels for the dept
                 
                 axis off
                 colormap(gray(255))
-                caxis([0 200])
+                VolCheck=vol2(:,:,round(size(vol2,1)/2));
+                brightness = mean(VolCheck(:))+3*std(VolCheck(:));
+                caxis([0 brightness])
             end
             
             
