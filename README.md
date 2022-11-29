@@ -1,5 +1,5 @@
 # Reconstruction-coreg-pipeline
-Cash lab code for coregistration of intracranial electrodes
+Code for coregistration of intracranial electrode used by the Cortical Physiology Laboratory at Massachusetts General Hospital, PI: Sydney Cash, https://cashlab.mgh.harvard.edu/
 
 This code uses a number of different open-source packages to localize electrodes implanted in the brain in the case of intracranial monitoring for the treatment of epilepsy. The idea is to use components of several packages that allows reconstruction and visualization of electrode locations to match to recorded intracranial neurophysiological data, whether in examining epileptiform activity, understanding cognitive processing, or examining the effects of direct electrical stimulation. 
 
