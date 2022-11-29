@@ -35,4 +35,5 @@ LeadDBS: https://www.lead-dbs.org/
 LeGUI: https://github.com/Rolston-Lab/LeGUI
 
 
-![Pipeline2](https://user-images.githubusercontent.com/11430978/190929846-7c92da00-2242-4994-bae0-6eed6f7a17f6.png)
+![Flowchart2](https://user-images.githubusercontent.com/11430978/204407584-68956d0a-a07f-426b-a9fa-fa0c4e88482d.png)
+
