@@ -1,61 +1,94 @@
-%% Coregistration
-% This Code is the Forerunner of All Good Reconstruction Code
-% In Development: Jan 2022
-% Note To Self: Run All Previous Sections Before Running Last Section
+%% Modular Reconstruction and Co-registration of Imaging from Implanted ECoG and SEEG Electrodes
+% This version was completed on November 15, 2022
+% 
+% For questions, please post issues to the GitHub
+% 
+
 clear all
+close
+
 %Add the paths in this order only:
 % Otherwise, functions in the fieldtrip toolbox which will make running this code
 %difficult.
-addpath(genpath('X:\Projects\Lab_Materials\Analysis_Tools_and_Software\fieldtrip-20220202\'))
-addpath(genpath('X:\Projects\Lab_Materials\Lab Techs\Recon_MMVT_Schematic\Reconstructions\CoregCode\'))
-addpath(genpath('F:\Dropbox (Personal)\ACPProjects\CashLab_DataOrganization\ReconPipeline\Code\BIDSConversion\'))
+addpath(genpath('/MyPC/Documents/MATLAB/fieldtrip-20220202'))
+addpath(genpath('/MyPC/bourbon-the-huckster/Documents/MATLAB/Recons/Coregistration_Figures_PreOp_PostOp'))
 
-PatientName='sub-5o1r';
-wd = ['Y:\ReconPipelinePaper\Data\'];
+%Path to the recons directory. This should be filled with subject folders.
+%Each subject folder will have the SurferOutput and RAS Excel 
+wd = ['MyPC/Documents/Recons/'];
 
-DirVal = fullfile(wd , ['derivatives\freesurfer\',PatientName,'_SurferOutput'], 'surf'); %the surf folder with the freesurfer output
-ImageDirectory = fullfile(wd , ['derivatives\ReconImages\',PatientName], [PatientName,'_Images']);         %print files
-RASExcelDirectory = fullfile(wd, PatientName, 'ses-postimp','ieeg' );
-MRIDirectory = fullfile(wd , [PatientName], 'ses-preimp', 'anat'); 
-MRIFile=dir([MRIDirectory,'\*.nii']);
+PatientName='sub-5o1r'; % name of the folder and id## in the working directory
 
-%uncomment if this is coming from an excel or .csv file
-% [num,txt,all]=xlsread( fullfile( RASExcelDirectory, [PatientName '_RAS.xlsx'] ) );
-% RAS_coords=[];
-% RAS_coords=num;
-% RAS_labels={};
-% RAS_labels=txt(2:end,1);
+% Setting this variable to 0 will create only the 2D visuals without
+% required a SurferOutput from FreeSurfer
+surferOutput = 1; % Set to 1 if you have run the Freesurfer Reconstruction
 
-RASInf = tsvread([RASExcelDirectory,'\',PatientName,'_ses-postimp_electrodes.tsv']);
-RAS_coords=[];
-RAS_coords=[RASInf.x RASInf.y RASInf.z];
-RAS_labels={};
-RAS_labels=RASInf.name;
+% This checks to see if you used BIDS formatting before continuing 
+if isfile( fullfile( wd, PatientName, 'ses-postimp', 'ieeg', [PatientName '_ses-postimp_electrodes.tsv'] ) )
+    BIDS = true;
+elseif isfile( fullfile( wd, PatientName, [PatientName '_RAS.xlsx'] ) )
+    BIDS = false;
+else
+    disp('We could not find the RAS excel spreadsheet in normal or BIDS format. Please check that all files are in the correct directories')
+    return
+end
+
+if surferOutput == 0
+    ImageDirectory = fullfile(wd , PatientName, 'Images'); %print files
+    RASExcelDirectory = fullfile(wd, PatientName );
+    MRIDirectory = fullfile(wd, PatientName ); %mri.nii...NOT nii.gz
+    MRIFile=dir( fullfile(MRIDirectory, 'mri.nii'));
+    [num,txt,all]=xlsread( fullfile( RASExcelDirectory, [PatientName '_RAS.xlsx'] ) );
+    RAS_coords=[];
+    RAS_coords=num;
+    RAS_labels={};
+    RAS_labels=txt(2:end,1);
+elseif BIDS 
+    DirVal = fullfile(wd , 'derivatives' , 'freesurfer', [PatientName,'_SurferOutput'], 'surf'); %the surf folder with the freesurfer output
+    ImageDirectory = fullfile(wd , 'derivatives', 'ReconImages', PatientName, [PatientName,'_Images']);         %print files
+    RASExcelDirectory = fullfile(wd, PatientName, 'ses-postimp','ieeg' );
+    MRIDirectory = fullfile(wd , PatientName, 'ses-preimp', 'anat');
+    MRIFile=dir( fullfile(MRIDirectory, '*.nii'));    
+    RASInf = tsvread( fullfile(RASExcelDirectory, [PatientName '_ses-postimp_electrodes.tsv'] ) );
+    RAS_coords=[];
+    RAS_coords=[RASInf.x RASInf.y RASInf.z];
+    RAS_labels={};
+    RAS_labels=RASInf.name;
+else
+    DirVal = fullfile(wd , PatientName, [PatientName '_SurferOutput'], 'surf'); %the surf folder with the freesurfer output
+    ImageDirectory = fullfile(wd , PatientName, 'Images');         %print files
+    RASExcelDirectory = fullfile(wd, PatientName );
+    MRIDirectory = fullfile(wd , PatientName, [PatientName '_SurferOutput'], 'mri'); %mri.nii...NOT nii.gz
+    MRIFile=dir( fullfile(MRIDirectory, 'mri.nii'));
+    [num,txt,all]=xlsread( fullfile( RASExcelDirectory, [PatientName '_RAS.xlsx'] ) );
+    RAS_coords=[];
+    RAS_coords=num;
+    RAS_labels={};
+    RAS_labels=txt(2:end,1);
+end
 
 % Check for Images Directory in the Working Directory, make it
 % if it's not there
 if ~isfolder(ImageDirectory)
-    
     mkdir(ImageDirectory)
-    disp('Made the Images folder in your Patient''s Working Directory!')
-    
+    disp('Made the Images folder in your Patient''s Working Directory!')    
 end
 
-csvwrite([RASExcelDirectory, PatientName,'_RAS.csv'],RAS_coords)
 display("Made it Through. Check the Workspace, that the files might match your expectations.");
 
-%% Getting the freesurfer pial and seeing where things are located, with the white matter in blue and pial surface.
+% Getting the freesurfer pial and seeing where things are located, with the white matter in blue and pial surface.
 
 % It's also handy for the blender-friendly stl file saving.
-if isempty(dir([DirVal,'\rh.pial.T1*']))==0
+if isfile(fullfile(DirVal,'rh.pial.T1'))
     rightPialFile='rh.pial.T1';
 else
     rightPialFile='rh.pial';
 end
+
 [verticesrh, facesrh] = freesurfer_read_surf( fullfile(DirVal,rightPialFile) );
 % stlwrite( fullfile(DirVal,'right.stl'), facesrh, verticesrh)
 
-if isempty(dir([DirVal,'\lh.pial.T1*']))==0
+if isfile(fullfile(DirVal,'lh.pial.T1'))
     leftPialFile='lh.pial.T1';
 else 
     leftPialFile='lh.pial';
@@ -88,9 +121,11 @@ shading interp; lighting gouraud; material dull;
 
 %% Plotting RAS electrodes on the Surfer Output
 clf
-
+close
 % Create figure handle in fig
-fig=gcf;
+% figure('units','normalized','outerposition',[0 0 1 1])
+% fig=gcf;
+fig = figure('units','normalized','outerposition',[0 0 1 1]);
 
 %Returns a matrix of vertex coordinates and face lists for the given .pial file
 [cortexr.vert, cortexr.tri] = read_surf( fullfile(DirVal, rightPialFile) );
@@ -125,11 +160,7 @@ for chan=1:length(ChanList)
     end
     
     ChannelName{chan}=currentChan;
-    
-    %If the label is a micro, just skip it
-    %     if strncmp('micro',currentChan,5)==1
-    %         continue
-    %     end
+
     if isempty(Num)==1
         ChannelGrouping{chan}=currentChan;
         ChannelNumber(chan)=0;
@@ -194,13 +225,14 @@ for OL=1:length(V)
     %   shading interp; lighting gouraud; %material dull;
     %If you want to save this image:
     
-    print(gcf,'-djpeg','-r600',fullfile(ImageDirectory,PatientName,'ThreeDView_',num2str(OL)))
-    
+    print(fig,'-dpng','-r400', fullfile(ImageDirectory,[PatientName '_ThreeDView_' num2str(OL)] ))
 end
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+close
 
 %% This is for the representations where the slices are along the axis of the electrode of interest.
 clf
+close
 %~~~~~~~~~A Bunch of Variables that are essentially the same thing, namely
 %they are cell arrays with the names of the electrode contacts in it
 ChanList=char(RAS_labels);
@@ -230,14 +262,13 @@ for chan=1:length(ChanList)
 end
 [IM,Label]=grp2idx(ChannelGrouping); % IM is a list of all groups determined by grp2idx(useless?)
 %~~~~~~~~
+fig = figure('units','normalized','outerposition',[0 0 1 1]);
 
 axis vis3d
 daspect([1 1 1]) %No isometric viewing, all units on the axes are 1
-title(['Patient: ',PatientName],'fontsize',24)
 axis off
 
 %~~~~~~
-
 
 % This loads the MRI and then rotates it and can interpolate it to let the
 % reslicing happen as it is easier to reslice along the length of the
@@ -264,12 +295,12 @@ Bvol2=mrirs2.anatomy;
 vol=255*(Bvol2/max(max(max(Bvol2))));
 vox2ras_mr=mrirs2.transform;
 ras2vox_mr=inv(vox2ras_mr);
-%% Slices of MRI relative to the whole electrode depth
+% Slices of MRI relative to the whole electrode depth
 
 %Defining a New RAS_coords1 for some reason...Change to RAS_coords
 RAS_coords1=[RAS_coords(:,1) RAS_coords(:,2) RAS_coords(:,3)];
 
-PLOT3D=1; % change this value if you don't want to do the glass brains
+PLOT3D=surferOutput; % change this value if you don't want to do the glass brains
 TargetChannels=[]; %this is if you want to label in red certain channel numbers
 
 %~~~~~~~~Main Logic Loop from here to end of Cell~~~~~~~~~~~~~~
@@ -277,9 +308,6 @@ for ChanLabel=1:length(Label)%For each Depth/Grid/Strip
     
     ElecLabel=Label{ChanLabel};%This is the current working label
     
-    figure1=gcf;
-    clf
-    set(gcf,'Position',[1 -29 1920 1004])
     Subplots=[1 4 7];
     for OL=1:1
         
@@ -350,7 +378,7 @@ for ChanLabel=1:length(Label)%For each Depth/Grid/Strip
         pix=ras2vox*[RASToPlot, ones(size(RASToPlot,1),1)]';
         [numv,dkd]= grp2idx(round(pix(3,:)));
         
-        axes1 = axes('Parent',figure1,'Color',[0 0 0],'CLim',[0 255],...
+        axes1 = axes('Parent',fig,'Color',[0 0 0],'CLim',[0 255],...
             'Position',[0.4 -.02 0.6960 0.9388],...
             'DataAspectRatio',[1 1 1],'Clipping','on','Projection','orthographic'); %,'ClippingStyle','3dbox'
         
@@ -430,13 +458,9 @@ for ChanLabel=1:length(Label)%For each Depth/Grid/Strip
         set(gca,'xticklabel',{[]},'yticklabel',{[]},'zticklabel',{[]})
         
         colormap(gray(255))
-        figure1.Color=[1 1 1];
-        figure1.PaperPositionMode = 'auto';
-        figure1.InvertHardcopy = 'off';
-                print(gcf,'-dpng','-r400',fullfile( ImageDirectory, ['ReconPerDepthSlice',ElecLabel]))
-        %            close
-%         pause
-%         clf
+
+        print(gcf,'-dpng','-r400',fullfile( ImageDirectory, ['ReconPerDepthSlice',ElecLabel]))
+        clf
     end
 end
 
@@ -451,15 +475,21 @@ close all
 mri_file=fullfile(MRIDirectory,MRIFile(1).name);
 mri = ft_read_mri(mri_file);
 cfg  = [];
-cfg.method='flip';
+if length(unique(mri.dim))==1 %this checks if all the dimensions are the same
+    cfg.method='flip'; %Flips orientation to be the same but no interpolation
+else
+    cfg.method='linear';  %Interpolates
+end
 cfg.downsample=1;
 mrirs = ft_volumereslice(cfg,mri);
 Bvol=mrirs.anatomy;
 vol2=256*Bvol/max(max(max(Bvol)));
+vol2(isnan(vol2))=0;
 
 vox2ras_mr2=mrirs.transform;
 ras2vox_mr2=inv(vox2ras_mr2);
 
+ChanList=char(RAS_labels);%Channel List, a char array of all the channel names
 ChannelName={};ChannelGrouping={};ChannelNumber=[];
 for chan=1:length(ChanList)
     
@@ -486,7 +516,7 @@ end
 [IM,Label]=grp2idx(ChannelGrouping);
 
 TargetChannels=[];
-PLOT3D=1; %Change if you don't want to run the glass brains
+PLOT3D=surferOutput; %Change if you don't want to run the glass brains
 
 for CHa=1:length(Label) %this automatically runs through the labels for the depths
     % for CHa=2             %this automatically runs through the labels for the depths
@@ -496,19 +526,20 @@ for CHa=1:length(Label) %this automatically runs through the labels for the dept
         
         for ChannelNum=1:length(find(IM==CHa))
             %         for ChannelNum=1:1
-            clf
             
-            figure1=gcf;
-            set(gcf,'Position',[1 -3 1518 1000]);
+            fig = figure('units','normalized','outerposition',[0 0 1 1]);
+            
+%             set(gcf,'Position',[1 -3 1518 1000]);
             Subplots=[1 2 3];
             POS2=[[0.0500 0.7253 0.2134 0.2157];[0.7030 0.7253 0.2134 0.2157];[0.3530 0.7253 0.2134 0.2157];];
             AxesLim1=[[25 225];[25 225];[25 175]];
             AxesLim2=[[50 200];[25 200];[50 200]];
             for OL=1:3
-                axes2 = axes('Parent',figure1,'Color',[0 0 0],'CLim',[100 255],...
+               
+                if PLOT3D==1
+                     axes2 = axes('Parent',fig,'Color',[0 0 0],'CLim',[100 255],...
                     'Position',[POS2(OL,:)],...
                     'DataAspectRatio',[1 1 1],'Clipping','on','Projection','orthographic');%,'ClippingStyle','3dbox');
-                if PLOT3D==1
                     verticeslh1=verticeslh;
                     verticeslh1(:,1)=-verticeslh1(:,1);
                     patch('Faces',faceslh,'Vertices',verticeslh1,'FaceColor',[0.8 0.8 0.8],'facealpha',0.55,'edgecolor','none')
@@ -519,6 +550,7 @@ for CHa=1:length(Label) %this automatically runs through the labels for the dept
                     
                 end
                 
+                [MI,NonLRelecLabels]=grp2idx(ChanList(:,2:3));
                 COL=colormap(cool(max(MI)));
                 for electrode=1:length(Label)
                     ElecNum=str2num(ChanList(IM==electrode,4:end));
@@ -581,7 +613,7 @@ for CHa=1:length(Label) %this automatically runs through the labels for the dept
             
             POS=[[0.003 0.0620 0.3 0.6];[0.303 0.0620 0.3 0.6];[0.603 0.0620 0.4 0.6]];
             
-            %HERES HOW YOU CHANGE THE SIZES OF MRI STUFF
+            %HERE'S HOW YOU CHANGE THE SIZES OF MRI STUFF
             Coronal=squeeze(vol2(:,round(voxMid(2)),:));
             Sagittal=squeeze(vol2(round(voxMid(1)),:,:));
             Horizontal=squeeze(vol2(:,:,round(voxMid(3))));
@@ -593,38 +625,40 @@ for CHa=1:length(Label) %this automatically runs through the labels for the dept
             for smw=1:3
                 if smw==1
                     rngAx=CoronalRange;
-                    ImageRangeThresh=median(CoronalRange(:))-median(CoronalRange(:))*.5;
+                    ImageRangeThresh=nanmedian(CoronalRange(:))-nanmedian(CoronalRange(:))*.6;
                 elseif smw==2
                     rngAx=HorizontalRange;
-                    ImageRangeThresh=median(HorizontalRange(:))-median(HorizontalRange(:))*.5;
+                    ImageRangeThresh=nanmedian(HorizontalRange(:))-nanmedian(HorizontalRange(:))*.6;
                 elseif smw==3
                     rngAx=SagittalRange;
-                    ImageRangeThresh=median(SagittalRange(:))-median(SagittalRange(:))*.5;
+                    ImageRangeThresh=nanmedian(SagittalRange(:))-nanmedian(SagittalRange(:))*.6;
                 end
                 
                 IndZero=find(nanmean(rngAx)<ImageRangeThresh);
-                YRng=[IndZero(diff(IndZero)>1) IndZero(find(diff(IndZero)>1)+1)];
+                first = IndZero(diff(IndZero)>1);
+                second = IndZero(find(diff(IndZero)>1)+1);
+                YRng=[first(1) second(1)];
+                
                 IndZero=find(nanmean(rngAx')<ImageRangeThresh);
-                XRng=[IndZero(diff(IndZero)>1) IndZero(find(diff(IndZero)>1)+1)];
+                first = IndZero(diff(IndZero)>1);
+                second = IndZero(find(diff(IndZero)>1)+1);
+                XRng=[first(1) second(1)];
+                
                 if isempty(YRng)==1
                     YRng=[1 size(rngAx,2)];
                 end
                 if isempty(XRng)==1
                     XRng=[1 size(rngAx,1)];
                 end
-                %                 if smw<3
+                
                 AxesLim1(smw,:)=YRng;
                 AxesLim2(smw,:)=XRng;
-                %                 else
-                %                 AxesLim1(smw,:)=XRng;
-                %                 AxesLim2(smw,:)=YRng;
-                %                 end
+
             end
-            
             
             %this is to plot the different views from the MRI
             for VI=1:3
-                axes1 = axes('Parent',figure1,'Color',[0 0 0],'CLim',[0 512],...
+                axes1 = axes('Parent',fig,'Color',[0 0 0],'CLim',[0 512],...
                     'Position',[POS(VI,:)],...
                     'DataAspectRatio',[1 1 1],'Clipping','on','Projection','orthographic');%,'ClippingStyle','3dbox');
                 colormap(gray(255))
@@ -637,24 +671,24 @@ for CHa=1:length(Label) %this automatically runs through the labels for the dept
                 
                 %This is the Recon Per Depth MRI picture Orientation
                 %vol2(:,:,:) corresponds to the volume in the Coronal,
-                %Axial, and Sagittal Directions, respectively.
+                %Axial, and Sagittal Directions, respectively. 
                 %E.g.: vol(Coronal, Axial, Sagittal)
                 if VI==1
                     imagesc(Coronal)
                     hold on
                     view(axes1,[-90 90]);
-                    text(size(Coronal,2)/2,AxesLim2(VI,1)+20,'L','color','w','fontsize',12,'backgroundcolor','k')
-                    text(size(Coronal,2)/2,AxesLim2(VI,2)-20,'R','color','w','fontsize',12,'backgroundcolor','k')
+                    text(AxesLim1(VI,2)*0.95,AxesLim2(VI,1)+10,'L','color','w','fontsize',12,'backgroundcolor','k')
+                    text(AxesLim1(VI,2)*0.95,AxesLim2(VI,2)-10,'R','color','w','fontsize',12,'backgroundcolor','k')
                     shading flat
                     set(axes1,'xlim',AxesLim1(VI,:),'ylim',AxesLim2(VI,:))
-                    %                     daspect([fliplr(size(Coronal)/max(size(Coronal))) 1])
+                                        daspect([fliplr(size(Coronal)/max(size(Coronal))) 1])
                 elseif VI==2
                     imagesc(Horizontal)
                     hold on
                     view(axes1,[270 90]);
-                    %                     axis ij
-                    text(size(Horizontal,2)/2,AxesLim2(VI,1)+20,'L','color','w','fontsize',12,'backgroundcolor','k')
-                    text(size(Horizontal,2)/2,AxesLim2(VI,2)-20,'R','color','w','fontsize',12,'backgroundcolor','k')
+                    %                  axis ij
+                    text(AxesLim1(VI,2)*0.95,AxesLim2(VI,1)+10,'L','color','w','fontsize',12,'backgroundcolor','k')
+                    text(AxesLim1(VI,2)*0.95,AxesLim2(VI,2)-10,'R','color','w','fontsize',12,'backgroundcolor','k')
                     shading flat
                     set(axes1,'xlim',AxesLim1(VI,:),'ylim',AxesLim2(VI,:))
                     %                     daspect([fliplr(size(Horizontal)/max(size(Horizontal))) 1])
@@ -663,10 +697,11 @@ for CHa=1:length(Label) %this automatically runs through the labels for the dept
                     hold on
                     
                     view(axes1,[-90 90]);
-                    text(size(Sagittal,2)/2,AxesLim2(VI,1)+20,'P','color','w','fontsize',12,'backgroundcolor','k')
-                    text(size(Sagittal,2)/2,AxesLim2(VI,2)-20,'A','color','w','fontsize',12,'backgroundcolor','k')
+                    text(AxesLim1(VI,2)*0.95,AxesLim2(VI,1)+10,'P','color','w','fontsize',12,'backgroundcolor','k')
+                    text(AxesLim1(VI,2)*0.95,AxesLim2(VI,2)-10,'A','color','w','fontsize',12,'backgroundcolor','k')
                     shading flat
                     set(axes1,'xlim',AxesLim1(VI,:),'ylim',AxesLim2(VI,:))
+%                     set(axes1, 'xlim', [1 300], 'ylim', AxesLim2(VI,:))
                     %                                         daspect([fliplr(size(Sagittal)/max(size(Sagittal))) 1])
                 end
                 
@@ -701,28 +736,10 @@ for CHa=1:length(Label) %this automatically runs through the labels for the dept
                 caxis([0 brightness])
             end
             
-            
-            %This allows you to move the subplots in the figure(children)
-            %around the layers, in this case, moving the rightmost MRI
-            %behind the middle MRI
-            %             k = get(gcf,'children');
-            %             set(gcf,'children',k([2 1 3 4 5 6]))
-            %
-            %             pause;
-            %             return;
-            
-            %~~~~~~~~~~~This section Seems to only work in Linux~~~~~~~~~~~
-            figure1.Color=[1 1 1];
-            figure1.PaperPositionMode = 'auto';
-            figure1.InvertHardcopy = 'off';
-            
-            set(gcf, 'PaperUnits', 'centimeters');
-            set(gcf, 'PaperPosition', [0 0 32 20]);
-            %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-%             pause
-%             clf
-                        print(gcf,'-dpng','-r400',fullfile( ImageDirectory, ['ReconPerDepth',TargetElec,'Channel',num2str(ChannelNum)]) )
-                       close
+            pause(2)
+  
+            print(fig,'-dpng','-r400',fullfile( ImageDirectory, ['ReconPerDepth',TargetElec,'Channel',num2str(ChannelNum)]) )
+            close
         end
     end
 end
