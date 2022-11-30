@@ -201,13 +201,7 @@ for electrode=1:length(Label)
         hold on
         text(RAS_coords(IM==electrode,1)+textLR,RAS_coords(IM==electrode,2)+textPA,RAS_coords(IM==electrode,3)+textIS,ChanList(IM==electrode,:),'fontsize',10,'color',[0 0 0],'Interpreter','none')
     end
-    % White Text--Acts on a certain subset of electrodes as determined by s1
-    %     if sl>160
-    %         ElecNum=str2num(CL(IM==sl,4:end)); %4:end MGH, 3:end BW
-    %         scatter3(RAS_coords(IM==sl,1)+elecLR,RAS_coords(IM==sl,2)+elecPA,RAS_coords(IM==sl,3)+elecIS,80,COL(MI(IM==sl),:),'filled')
-    %         hold on
-    %         text(RAS_coords(IM==sl,1)+textLR,RAS_coords(IM==sl,2)+textPA,RAS_coords(IM==sl,3)+textIS,CL(IM==sl,:),'fontsize',10,'color',[1 1 1])
-    %     end
+
 end
 
 axis vis3d%Makes the brain farther away in the figure view
